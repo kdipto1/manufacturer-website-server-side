@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 const express = require("express");
 const cors = require("cors");
@@ -10,7 +11,6 @@ app.use(express.json());
 
 //MongoDB
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hy2si.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -40,6 +40,23 @@ async function run() {
         tools = await cursor.toArray();
       }
       res.send(tools);
+    });
+    // Update single tool for update
+    app.put("/tools/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = { $set: data };
+      const option = { upsert: true };
+      const result = await toolsCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
+    //Get single tool from database
+    app.get("/tools/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: ObjectId(id) };
+      const result = await toolsCollection.findOne(query);
+      res.send(result);
     });
   } finally {
   }
