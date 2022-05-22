@@ -58,6 +58,13 @@ async function run() {
       const result = await toolsCollection.findOne(query);
       res.send(result);
     });
+    //Delete single tool from database
+    app.delete("/tools/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: ObjectId(id) };
+      const result = await toolsCollection.deleteOne(query)
+      res.send(result);
+    })
   } finally {
   }
 }
