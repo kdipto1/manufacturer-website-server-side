@@ -62,9 +62,15 @@ async function run() {
     app.delete("/tools/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
-      const result = await toolsCollection.deleteOne(query)
+      const result = await toolsCollection.deleteOne(query);
       res.send(result);
-    })
+    });
+    //Api for jwt token
+    app.post("/login", async (req, res) => {
+      const email = req.body;
+      const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+      res.send({ token: token });
+    });
   } finally {
   }
 }
