@@ -9,8 +9,25 @@ const jwt = require("jsonwebtoken");
 app.use(cors());
 app.use(express.json());
 
-//MongoDB
 
+
+//Verify token function:
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
+//MongoDB
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hy2si.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -21,6 +38,13 @@ async function run() {
   try {
     await client.connect();
     const toolsCollection = client.db("manufacture").collection("tools");
+    const orderCollection = client.db("manufacture").collection("orders");
+    //Api for jwt token
+    app.post("/login", async (req, res) => {
+      const email = req.body;
+      const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+      res.send({ token: token });
+    });
     //post tool in database
     app.post("/tools", async (req, res) => {
       const newTool = req.body;
@@ -65,12 +89,13 @@ async function run() {
       const result = await toolsCollection.deleteOne(query);
       res.send(result);
     });
-    //Api for jwt token
-    app.post("/login", async (req, res) => {
-      const email = req.body;
-      const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
-      res.send({ token: token });
-    });
+    // Get user order from client side and post in database
+    app.post("/orders", async (req, res) => {
+      const newOrder = req.body;
+      console.log(newOrder);
+      const result = await orderCollection.insertOne(newOrder);
+      res.send(result);
+    })
   } finally {
   }
 }
