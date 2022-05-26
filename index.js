@@ -9,8 +9,6 @@ const jwt = require("jsonwebtoken");
 app.use(cors());
 app.use(express.json());
 
-
-
 //Verify token function:
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -39,6 +37,7 @@ async function run() {
     await client.connect();
     const toolsCollection = client.db("manufacture").collection("tools");
     const orderCollection = client.db("manufacture").collection("orders");
+    const reviewCollection = client.db("manufacture").collection("reviews");
     //Api for jwt token
     app.post("/login", async (req, res) => {
       const email = req.body;
@@ -95,7 +94,29 @@ async function run() {
       console.log(newOrder);
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
-    })
+    });
+    // Get orders collection from database
+    app.get("/orders", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const query = { email: email };
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+      console.log(result);
+    });
+    // post api for user review
+    app.post("/review", async (req, res) => {
+      const newReview = req.body;
+      console.log(newReview);
+      const result = await reviewCollection.insertOne(newReview);
+      res.send(result);
+    });
+    app.get("/review", async (req, res) => {
+      const query = {};
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    });
   } finally {
   }
 }
