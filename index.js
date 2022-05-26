@@ -48,7 +48,7 @@ async function run() {
     //post tool in database
     app.post("/tools", async (req, res) => {
       const newTool = req.body;
-      console.log(newTool);
+      // console.log(newTool);
       const result = await toolsCollection.insertOne(newTool);
       res.send(result);
     });
@@ -92,12 +92,12 @@ async function run() {
     // Get user order from client side and post in database
     app.post("/orders", async (req, res) => {
       const newOrder = req.body;
-      console.log(newOrder);
+      // console.log(newOrder);
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
     });
-    // Get orders collection from database
-    app.get("/orders", async (req, res) => {
+    // Get orders collection for user from database
+    app.get("/orders", verifyJWT, async (req, res) => {
       const email = req.query.email;
       console.log(email);
       const query = { email: email };
@@ -109,7 +109,7 @@ async function run() {
     // post api for user review
     app.post("/review", async (req, res) => {
       const newReview = req.body;
-      console.log(newReview);
+      // console.log(newReview);
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
     });
@@ -122,14 +122,38 @@ async function run() {
     // Post user info in api
     app.post("/users", async (req, res) => {
       const newUser = req.body;
-      const result = await userCollection.insertOne(newUser);
-      res.send(result);
+      const query = { email: newUser.email };
+      const exists = await userCollection.findOne(query);
+      // console.log(exists);
+      if (exists) {
+        return res.send({ success: false, message: "Old user" });
+      } else {
+        const result = await userCollection.insertOne(newUser);
+        res.send(result);
+      }
     });
     // Get user info from database
     app.get("/users", async (req, res) => {
       const email = req.query.email;
-      const query = { email: email }
-      const result = await userCollection.find(query).toArray();
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+    //Update user info Api
+    app.put("/users/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = { $set: data };
+      const option = { upsert: true };
+      const result = await userCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
+    //Api for get admin
+    app.get("/admin", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
       res.send(result);
     })
   } finally {
