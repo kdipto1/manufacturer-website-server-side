@@ -38,6 +38,7 @@ async function run() {
     const toolsCollection = client.db("manufacture").collection("tools");
     const orderCollection = client.db("manufacture").collection("orders");
     const reviewCollection = client.db("manufacture").collection("reviews");
+    const userCollection = client.db("manufacture").collection("users");
     //Api for jwt token
     app.post("/login", async (req, res) => {
       const email = req.body;
@@ -112,9 +113,16 @@ async function run() {
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
     });
+    // Get api for getting reviews of users
     app.get("/review", async (req, res) => {
       const query = {};
       const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Post user info in api
+    app.post("/users", async (req, res) => {
+      const newUser = req.body;
+      const result = await userCollection.insertOne(newUser);
       res.send(result);
     });
   } finally {
