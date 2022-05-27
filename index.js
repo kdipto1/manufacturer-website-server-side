@@ -72,9 +72,8 @@ async function run() {
       }
     };
     //post tool in database
-    app.post("/tools", async (req, res) => {
+    app.post("/tools",verifyJWT,verifyAdmin, async (req, res) => {
       const newTool = req.body;
-      // console.log(newTool);
       const result = await toolsCollection.insertOne(newTool);
       res.send(result);
     });
@@ -85,14 +84,14 @@ async function run() {
       const cursor = toolsCollection.find(query);
       let tools;
       if (size) {
-        tools = await cursor.limit(size).toArray();
+        tools = await (await cursor.limit(size).toArray()).reverse();
       } else {
-        tools = await cursor.toArray();
+        tools = await (await cursor.toArray()).reverse();
       }
       res.send(tools);
     });
     // Update single tool for update
-    app.put("/tools/:id", async (req, res) => {
+    app.put("/tools/:id",verifyJWT, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
@@ -112,21 +111,21 @@ async function run() {
       res.send(result);
     });
     //Get single tool from database
-    app.get("/tools/:id", async (req, res) => {
+    app.get("/tools/:id",verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.findOne(query);
       res.send(result);
     });
     //Delete single tool from database
-    app.delete("/tools/:id", async (req, res) => {
+    app.delete("/tools/:id",verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.deleteOne(query);
       res.send(result);
     });
     // Get user order from client side and post in database
-    app.post("/orders", async (req, res) => {
+    app.post("/orders",verifyJWT, async (req, res) => {
       const newOrder = req.body;
       // console.log(newOrder);
       const result = await orderCollection.insertOne(newOrder);
@@ -138,7 +137,7 @@ async function run() {
       res.send(result);
     });
     // Get orders collection for user from database
-    app.get("/userOrders", async (req, res) => {
+    app.get("/userOrders",verifyJWT, async (req, res) => {
       const email = req.query.email;
       // console.log(email);
       const query = { email: email };
@@ -148,7 +147,7 @@ async function run() {
       // console.log(result);
     });
     //Api for single order
-    app.get("/userOrder/:id", async (req, res) => {
+    app.get("/userOrder/:id",verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.findOne(query);
@@ -170,7 +169,7 @@ async function run() {
       res.send(updatedDoc);
     });
     //Delete order api
-    app.delete("/userOrders/:id", async (req, res) => {
+    app.delete("/userOrders/:id", verifyJWT, async (req, res) => {
       const id = req.params;
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
@@ -190,7 +189,7 @@ async function run() {
       res.send(result);
     });
     // Post user info in api
-    app.post("/users", async (req, res) => {
+    app.post("/users", verifyJWT, async (req, res) => {
       const newUser = req.body;
       const query = { email: newUser.email };
       const exists = await userCollection.findOne(query);
@@ -203,14 +202,14 @@ async function run() {
       }
     });
     // Get user info from database
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await userCollection.findOne(query);
       res.send(result);
     });
     //Update user info Api
-    app.put("/users/:id", async (req, res) => {
+    app.put("/users/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
@@ -227,13 +226,13 @@ async function run() {
       res.send(result);
     });
     // Get users for admin
-    app.get("/makeAdmin", async (req, res) => {
+    app.get("/makeAdmin", verifyJWT, verifyAdmin, async (req, res) => {
       const query = {};
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
     //Make admin Api
-    app.post("/makeAdmin/:id", async (req, res) => {
+    app.post("/makeAdmin/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
@@ -241,7 +240,7 @@ async function run() {
       const option = { upsert: true };
       const result = await userCollection.updateOne(filter, updateDoc, option);
       res.send(result);
-    })
+    });
   } finally {
   }
 }
