@@ -101,6 +101,16 @@ async function run() {
       const result = await toolsCollection.updateOne(filter, updateDoc, option);
       res.send(result);
     });
+    app.put("/tool/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      console.log(data);
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = { $set: { quantity: data.quantity } };
+      const option = { upsert: true };
+      const result = await toolsCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
     //Get single tool from database
     app.get("/tools/:id", async (req, res) => {
       const { id } = req.params;
@@ -123,10 +133,10 @@ async function run() {
       res.send(result);
     });
     app.get("/orders", verifyJWT, verifyAdmin, async (req, res) => {
-      const query = {}
-      const result = await orderCollection.find(query).toArray()
-      res.send(result)
-    })
+      const query = {};
+      const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    });
     // Get orders collection for user from database
     app.get("/userOrders", async (req, res) => {
       const email = req.query.email;
@@ -140,18 +150,18 @@ async function run() {
     //Api for single order
     app.get("/userOrder/:id", async (req, res) => {
       const { id } = req.params;
-      const query = { _id: ObjectId(id) }
-      const result = await orderCollection.findOne(query)
-      res.send(result)
-    })
-    //update booking by id for payment info update
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.findOne(query);
+      res.send(result);
+    });
+    //update user order by id for payment info update
     app.patch("/userOrders/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const payment = req.body;
       const filter = { _id: ObjectId(id) };
       const updatedDoc = {
         $set: {
-          status:"paid",
+          status: "paid",
           transactionId: payment.transactionId,
         },
       };
@@ -162,10 +172,10 @@ async function run() {
     //Delete order api
     app.delete("/userOrders/:id", async (req, res) => {
       const id = req.params;
-      const query = { _id: ObjectId(id) }
-      const result = await orderCollection.deleteOne(query)
-      res.send(result)
-    })
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.deleteOne(query);
+      res.send(result);
+    });
     // post api for user review
     app.post("/review", async (req, res) => {
       const newReview = req.body;
@@ -216,6 +226,22 @@ async function run() {
       const result = await userCollection.findOne(query);
       res.send(result);
     });
+    // Get users for admin
+    app.get("/makeAdmin", async (req, res) => {
+      const query = {};
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+    //Make admin Api
+    app.post("/makeAdmin/:id", async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = { $set: data };
+      const option = { upsert: true };
+      const result = await userCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    })
   } finally {
   }
 }
