@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 //middleware
 app.use(cors());
 app.use(express.json());
@@ -39,12 +40,37 @@ async function run() {
     const orderCollection = client.db("manufacture").collection("orders");
     const reviewCollection = client.db("manufacture").collection("reviews");
     const userCollection = client.db("manufacture").collection("users");
+    const paymentCollection = client.db("manufacture").collection("payments");
+    //Payment api
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const order = req.body;
+      const price = order.totalPrice;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
+    });
     //Api for jwt token
     app.post("/login", async (req, res) => {
       const email = req.body;
       const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
       res.send({ token: token });
     });
+    //Api for verify admin
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        next();
+      } else {
+        res.status(403).send({ message: "Forbidden Access" });
+      }
+    };
     //post tool in database
     app.post("/tools", async (req, res) => {
       const newTool = req.body;
@@ -96,15 +122,43 @@ async function run() {
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
     });
+    app.get("/orders", verifyJWT, verifyAdmin, async (req, res) => {
+      const query = {}
+      const result = await orderCollection.find(query).toArray()
+      res.send(result)
+    })
     // Get orders collection for user from database
-    app.get("/orders", verifyJWT, async (req, res) => {
+    app.get("/userOrders", async (req, res) => {
       const email = req.query.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
-      console.log(result);
+      // console.log(result);
+    });
+    //Api for single order
+    app.get("/userOrder/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: ObjectId(id) }
+      const result = await orderCollection.findOne(query)
+      res.send(result)
+    })
+    //update booking by id for payment info update
+    app.patch("/userOrders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          status:"paid",
+          transactionId: payment.transactionId,
+        },
+      };
+      const result = await paymentCollection.insertOne(payment);
+      const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+      res.send(updatedDoc);
     });
     // post api for user review
     app.post("/review", async (req, res) => {
@@ -155,7 +209,7 @@ async function run() {
       const query = { email: email };
       const result = await userCollection.findOne(query);
       res.send(result);
-    })
+    });
   } finally {
   }
 }
