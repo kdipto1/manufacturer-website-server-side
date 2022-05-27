@@ -202,7 +202,7 @@ async function run() {
       }
     });
     // Get user info from database
-    app.get("/users", verifyJWT, async (req, res) => {
+    app.get("/users",verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await userCollection.findOne(query);
