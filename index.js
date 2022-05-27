@@ -151,7 +151,6 @@ async function run() {
       const filter = { _id: ObjectId(id) };
       const updatedDoc = {
         $set: {
-          paid: true,
           status:"paid",
           transactionId: payment.transactionId,
         },
@@ -160,6 +159,13 @@ async function run() {
       const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
       res.send(updatedDoc);
     });
+    //Delete order api
+    app.delete("/userOrders/:id", async (req, res) => {
+      const id = req.params;
+      const query = { _id: ObjectId(id) }
+      const result = await orderCollection.deleteOne(query)
+      res.send(result)
+    })
     // post api for user review
     app.post("/review", async (req, res) => {
       const newReview = req.body;
