@@ -77,6 +77,12 @@ async function run() {
       const result = await toolsCollection.insertOne(newTool);
       res.send(result);
     });
+    // Get tools for manage
+    app.get("/manageTools", async (req, res) => {
+      const query = {};
+      const result = await toolsCollection.find(query).toArray();
+      res.send(result);
+    })
     //Get tools from database
     app.get("/tools", async (req, res) => {
       const size = parseInt(req.query.size);
