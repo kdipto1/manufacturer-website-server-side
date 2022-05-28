@@ -78,11 +78,11 @@ async function run() {
       res.send(result);
     });
     // Get tools for manage
-    app.get("/manageTools",verifyJWT,verifyAdmin, async (req, res) => {
+    app.get("/manageTools", verifyJWT, verifyAdmin, async (req, res) => {
       const query = {};
       const result = await toolsCollection.find(query).toArray();
       res.send(result);
-    })
+    });
     //Get tools from database
     app.get("/tools", async (req, res) => {
       const size = parseInt(req.query.size);
@@ -199,7 +199,9 @@ async function run() {
     // Get api for getting reviews of users
     app.get("/review", async (req, res) => {
       const query = {};
-      const result = await reviewCollection.find(query).toArray();
+      const result = await (
+        await reviewCollection.find(query).toArray()
+      ).reverse();
       res.send(result);
     });
     // Post user info in api
