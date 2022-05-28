@@ -72,7 +72,7 @@ async function run() {
       }
     };
     //post tool in database
-    app.post("/tools",verifyJWT,verifyAdmin, async (req, res) => {
+    app.post("/tools", verifyJWT, verifyAdmin, async (req, res) => {
       const newTool = req.body;
       const result = await toolsCollection.insertOne(newTool);
       res.send(result);
@@ -91,7 +91,7 @@ async function run() {
       res.send(tools);
     });
     // Update single tool for update
-    app.put("/tools/:id",verifyJWT, async (req, res) => {
+    app.put("/tools/:id", async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
@@ -111,14 +111,14 @@ async function run() {
       res.send(result);
     });
     //Get single tool from database
-    app.get("/tools/:id",verifyJWT, async (req, res) => {
+    app.get("/tools/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.findOne(query);
       res.send(result);
     });
     //Delete single tool from database
-    app.delete("/tools/:id",verifyJWT, async (req, res) => {
+    app.delete("/tools/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.deleteOne(query);
@@ -131,7 +131,7 @@ async function run() {
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
     });
-    app.get("/orders", verifyJWT, verifyAdmin, async (req, res) => {
+    app.get("/orders", async (req, res) => {
       const query = {};
       const result = await orderCollection.find(query).toArray();
       res.send(result);
@@ -154,7 +154,7 @@ async function run() {
       res.send(result);
     });
     //update user order by id for payment info update
-    app.patch("/userOrders/:id", verifyJWT, async (req, res) => {
+    app.patch("/userOrders/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const payment = req.body;
       const filter = { _id: ObjectId(id) };
@@ -169,7 +169,7 @@ async function run() {
       res.send(updatedDoc);
     });
     //Delete order api
-    app.delete("/userOrders/:id", verifyJWT, async (req, res) => {
+    app.delete("/userOrders/:id", async (req, res) => {
       const id = req.params;
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
@@ -189,7 +189,7 @@ async function run() {
       res.send(result);
     });
     // Post user info in api
-    app.post("/users", verifyJWT, async (req, res) => {
+    app.post("/users", async (req, res) => {
       const newUser = req.body;
       const query = { email: newUser.email };
       const exists = await userCollection.findOne(query);
@@ -209,7 +209,7 @@ async function run() {
       res.send(result);
     });
     //Update user info Api
-    app.put("/users/:id", verifyJWT, async (req, res) => {
+    app.put("/users/:id",verifyJWT, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
@@ -219,7 +219,7 @@ async function run() {
       res.send(result);
     });
     //Api for get admin
-    app.get("/admin", async (req, res) => {
+    app.get("/admin", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await userCollection.findOne(query);
