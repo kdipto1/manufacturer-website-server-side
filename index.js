@@ -118,14 +118,14 @@ async function run() {
       res.send(result);
     });
     //Delete single tool from database
-    app.delete("/tools/:id", async (req, res) => {
+    app.delete("/tools/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.deleteOne(query);
       res.send(result);
     });
     // Get user order from client side and post in database
-    app.post("/orders",verifyJWT, async (req, res) => {
+    app.post("/orders", verifyJWT, async (req, res) => {
       const newOrder = req.body;
       // console.log(newOrder);
       const result = await orderCollection.insertOne(newOrder);
@@ -148,7 +148,7 @@ async function run() {
       res.send(result);
     });
     // Get orders collection for user from database
-    app.get("/userOrders",verifyJWT, async (req, res) => {
+    app.get("/userOrders", verifyJWT, async (req, res) => {
       const email = req.query.email;
       // console.log(email);
       const query = { email: email };
@@ -158,14 +158,14 @@ async function run() {
       // console.log(result);
     });
     //Api for single order
-    app.get("/userOrder/:id",verifyJWT, async (req, res) => {
+    app.get("/userOrder/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.findOne(query);
       res.send(result);
     });
     //update user order by id for payment info update
-    app.patch("/userOrders/:id",verifyJWT, async (req, res) => {
+    app.patch("/userOrders/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const payment = req.body;
       const filter = { _id: ObjectId(id) };
@@ -213,14 +213,14 @@ async function run() {
       }
     });
     // Get user info from database
-    app.get("/users",verifyJWT, async (req, res) => {
+    app.get("/users", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await userCollection.findOne(query);
       res.send(result);
     });
     //Update user info Api
-    app.put("/users/:id",verifyJWT, async (req, res) => {
+    app.put("/users/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const data = req.body;
       const filter = { _id: ObjectId(id) };
