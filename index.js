@@ -131,9 +131,20 @@ async function run() {
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
     });
+    //Get all orders
     app.get("/orders", async (req, res) => {
       const query = {};
       const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    });
+    //Change shipping status Api
+    app.put("/orders/:id", verifyJWT, async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = { $set: data };
+      const option = { upsert: true };
+      const result = await orderCollection.updateOne(filter, updateDoc, option);
       res.send(result);
     });
     // Get orders collection for user from database
