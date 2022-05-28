@@ -78,7 +78,7 @@ async function run() {
       res.send(result);
     });
     // Get tools for manage
-    app.get("/manageTools", async (req, res) => {
+    app.get("/manageTools",verifyJWT,verifyAdmin, async (req, res) => {
       const query = {};
       const result = await toolsCollection.find(query).toArray();
       res.send(result);
@@ -133,7 +133,6 @@ async function run() {
     // Get user order from client side and post in database
     app.post("/orders", verifyJWT, async (req, res) => {
       const newOrder = req.body;
-      // console.log(newOrder);
       const result = await orderCollection.insertOne(newOrder);
       res.send(result);
     });
@@ -156,7 +155,6 @@ async function run() {
     // Get orders collection for user from database
     app.get("/userOrders", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      // console.log(email);
       const query = { email: email };
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray();
@@ -195,7 +193,6 @@ async function run() {
     // post api for user review
     app.post("/review", async (req, res) => {
       const newReview = req.body;
-      // console.log(newReview);
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
     });
@@ -210,7 +207,6 @@ async function run() {
       const newUser = req.body;
       const query = { email: newUser.email };
       const exists = await userCollection.findOne(query);
-      // console.log(exists);
       if (exists) {
         return res.send({ success: false, message: "Old user" });
       } else {
